@@ -66,4 +66,29 @@ public class ProductDaoImpl implements ProductDao {
 
     }
 
+    @Override
+    public void updateProduct(Integer productId, ProductRequest productRequest) {
+        String sql = "UPDATE product SET product_name =:productName, category = :category, image_url=:imageUrl," +
+                "price =:price, stock=:stock, description=:description, last_modified_date=:lastModifiedDate" +
+                " WHERE product_id = :productId "; // 修改商品時，也要去儲存「商品最後修改的時間」
+
+        Map<String,Object> map = new HashMap<>();
+        map.put("productId",productId);
+
+        map.put("productName", productRequest.getProductName());
+        // 由於Esum本身值是物件，資料庫不認識，若不轉成字串格式會導致傳入資料庫錯誤
+        map.put("category", productRequest.getCategory().toString());
+        map.put("imageUrl", productRequest.getImageUrl());
+        map.put("price", productRequest.getPrice());
+        map.put("stock", productRequest.getStock());
+        map.put("description", productRequest.getDescription());
+        // 它是檢測數據變更的「版本標記」，避免不同用戶的更改互相覆蓋。
+        // new Date 來記錄當下的時間點
+        map.put("lastModifiedDate", new Date());
+
+        namedParameterJdbcTemplate.update(sql,map);
+
+
+    }
+
 }

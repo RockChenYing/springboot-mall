@@ -35,7 +35,23 @@ public class ProductController {
         Product product = productService.getProductById(productId);
 //        productService.getProductById(productService.createProduct(productRequest);
         return ResponseEntity.status(HttpStatus.CREATED).body(product);
+    }
+    // 修改步驟有兩個
+    @PutMapping("/products/{productId}")
+    public ResponseEntity<Product> updateProduct(@PathVariable Integer productId,
+                                                 @RequestBody @Valid ProductRequest productRequest){
+        // 第一步：先檢查 product 是否存在
+        Product product = productService.getProductById(productId);
+        if(product == null){
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+        // 第二步：如果商品有存在，修改商品的數據
+        // 使用Service層中，修改商品的方法，透過productId找到商品，再根據dto-productRequest的資料進行更新
+        productService.updateProduct(productId, productRequest);
+        // 透過 getProductById 方法取得指定 productId 的商品資料，用於"確認"剛剛更新的內容是否正確。
+        Product updateProduct = productService.getProductById(productId);
 
+        return ResponseEntity.status(HttpStatus.OK).body(updateProduct);
     }
 
 
