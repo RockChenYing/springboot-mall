@@ -1,6 +1,7 @@
 package com.rockchen.springbootshopmall.service.impl;
 
 import com.rockchen.springbootshopmall.dao.ProductDao;
+import com.rockchen.springbootshopmall.dto.ProductRequest;
 import com.rockchen.springbootshopmall.model.Product;
 import com.rockchen.springbootshopmall.service.ProductService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,4 +18,10 @@ public class ProductServiceImpl implements ProductService {
     public Product getProductById(Integer productId) {
         return productDao.getProductById(productId);
     }
+
+    @Override
+    public Integer createProduct(ProductRequest productRequest) {
+        return productDao.createProduct(productRequest);
+    }
+
 }
