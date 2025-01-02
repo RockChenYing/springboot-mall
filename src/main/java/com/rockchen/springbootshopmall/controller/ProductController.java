@@ -1,5 +1,6 @@
 package com.rockchen.springbootshopmall.controller;
 
+import com.rockchen.springbootshopmall.constant.ProductCategory;
 import com.rockchen.springbootshopmall.dto.ProductRequest;
 import com.rockchen.springbootshopmall.model.Product;
 import com.rockchen.springbootshopmall.service.ProductService;
@@ -18,11 +19,24 @@ public class ProductController {
     ProductService productService;
 
     @GetMapping("/products")
-    public ResponseEntity<List<Product>> getProducts(){
-        List<Product> productList = productService.getProducts();
+    public ResponseEntity<List<Product>> getProducts(
+            @RequestParam(required = false) ProductCategory category, // 設定category請求參數不是必填
+            @RequestParam(required = false) String search
+    ){
+        List<Product> productList = productService.getProducts(category, search);
 
         return ResponseEntity.status(HttpStatus.OK).body(productList);
     }
+
+//    轉成Optional的參考
+//    @GetMapping("/products/{productId}")
+//    // ResponseEntity<> 自定義回傳的狀態碼 http response 的細節
+//    public ResponseEntity<Product> getProduct(@PathVariable Integer productId){
+//
+//        return productService.getProductById(productId)
+//                .map(product -> ResponseEntity.status(HttpStatus.ACCEPTED).body(product))
+//                .orElse(ResponseEntity.status(HttpStatus.NOT_FOUND).build());
+//    }
 
     @GetMapping("/products/{productId}")
     // ResponseEntity<> 自定義回傳的狀態碼 http response 的細節
@@ -36,6 +50,7 @@ public class ProductController {
         }
 
     }
+
     @PostMapping("/products")
     public ResponseEntity<Product> createProduct(@RequestBody @Valid ProductRequest productRequest){
         // 我預期在productService有新增商品的方法，是透過Id的方式
