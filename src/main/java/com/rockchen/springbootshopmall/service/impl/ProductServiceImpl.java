@@ -1,5 +1,6 @@
 package com.rockchen.springbootshopmall.service.impl;
 
+import com.rockchen.springbootshopmall.constant.ProductCategory;
 import com.rockchen.springbootshopmall.dao.ProductDao;
 import com.rockchen.springbootshopmall.dto.ProductRequest;
 import com.rockchen.springbootshopmall.model.Product;
@@ -8,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Optional;
 
 @Component
 public class ProductServiceImpl implements ProductService {
@@ -17,14 +19,19 @@ public class ProductServiceImpl implements ProductService {
     private ProductDao productDao;
 
     @Override
-    public List<Product> getProducts() {
-        return productDao.getProducts();
+    public List<Product> getProducts(ProductCategory category,String search) {
+        return productDao.getProducts(category, search);
     }
 
     @Override
     public Product getProductById(Integer productId) {
         return productDao.getProductById(productId);
     }
+
+//    @Override
+//    public Optional<Product> getProductById(Integer productId) {
+//        return productDao.getProductById(productId);
+//    }
 
     @Override
     public Integer createProduct(ProductRequest productRequest) {
