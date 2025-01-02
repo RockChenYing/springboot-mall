@@ -1,6 +1,7 @@
 package com.rockchen.springbootshopmall.controller;
 
 import com.rockchen.springbootshopmall.constant.ProductCategory;
+import com.rockchen.springbootshopmall.dao.ProductQueryParams;
 import com.rockchen.springbootshopmall.dto.ProductRequest;
 import com.rockchen.springbootshopmall.model.Product;
 import com.rockchen.springbootshopmall.service.ProductService;
@@ -23,7 +24,11 @@ public class ProductController {
             @RequestParam(required = false) ProductCategory category, // 設定category請求參數不是必填
             @RequestParam(required = false) String search
     ){
-        List<Product> productList = productService.getProducts(category, search);
+        ProductQueryParams productQueryParams = new ProductQueryParams();
+        productQueryParams.getCategory();
+        productQueryParams.getSearch();
+
+        List<Product> productList = productService.getProducts(productQueryParams);
 
         return ResponseEntity.status(HttpStatus.OK).body(productList);
     }
