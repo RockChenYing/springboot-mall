@@ -2,6 +2,7 @@ package com.rockchen.springbootshopmall.dao.impl;
 
 import com.rockchen.springbootshopmall.constant.ProductCategory;
 import com.rockchen.springbootshopmall.dao.ProductDao;
+import com.rockchen.springbootshopmall.dao.ProductQueryParams;
 import com.rockchen.springbootshopmall.dto.ProductRequest;
 import com.rockchen.springbootshopmall.model.Product;
 import com.rockchen.springbootshopmall.rowmapper.ProductRowMapper;
@@ -22,20 +23,20 @@ public class ProductDaoImpl implements ProductDao {
     NamedParameterJdbcTemplate namedParameterJdbcTemplate;
 
     @Override
-    public List<Product> getProducts(ProductCategory category, String search) {
+    public List<Product> getProducts(ProductQueryParams productQueryParams) {
         String sql = "SELECT product_id, product_name, category, image_url, price, stock, " +
                      "description, created_date,last_modified_date " +
                      "FROM product WHERE 1=1"; //WHERE 1=1 不會影響查詢的數據，但可以讓sql語法與 AND 拼接使用
         Map<String,Object> map = new HashMap<>();
 
-        if(category != null){
+        if(productQueryParams.getCategory() != null){
             sql = sql + " AND category = :category ";
-            map.put("category", category.name());
+            map.put("category", productQueryParams.getCategory().name());
         }
 
-        if(search !=null){
+        if(productQueryParams.getSearch() !=null){
             sql = sql + " AND product_name LIKE :search";
-            map.put("search","%" + search + "%");
+            map.put("search","%" + productQueryParams.getSearch() + "%");
         }
 
         List<Product> productList = namedParameterJdbcTemplate.query(sql,map,new ProductRowMapper());
