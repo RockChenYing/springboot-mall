@@ -29,17 +29,23 @@ public class ProductDaoImpl implements ProductDao {
                      "FROM product WHERE 1=1"; //WHERE 1=1 不會影響查詢的數據，但可以讓sql語法與 AND 拼接使用
         Map<String,Object> map = new HashMap<>();
 
+        // 1.查詢條件
         if(productQueryParams.getCategory() != null){
             sql = sql + " AND category = :category ";
             map.put("category", productQueryParams.getCategory().name());
         }
-
+        // 2.排序
         if(productQueryParams.getSearch() !=null){
             sql = sql + " AND product_name LIKE :search";
             map.put("search","%" + productQueryParams.getSearch() + "%");
         }
         // 拼接ORDER BY的SQL語法，並依據OrderBy所指定欄位，來執行升序或降序動作
         sql = sql + " ORDER BY " + productQueryParams.getOrderBy() + " " + productQueryParams.getSort();
+
+        // 3.分頁
+        sql = sql + " LIMIT :limit OFFSET :offset ";
+        map.put("limit", productQueryParams.getLimit());
+        map.put("offset", productQueryParams.getOffset());
 
         List<Product> productList = namedParameterJdbcTemplate.query(sql,map,new ProductRowMapper());
 
