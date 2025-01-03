@@ -5,6 +5,7 @@ import com.rockchen.springbootshopmall.dao.ProductQueryParams;
 import com.rockchen.springbootshopmall.dto.ProductRequest;
 import com.rockchen.springbootshopmall.model.Product;
 import com.rockchen.springbootshopmall.service.ProductService;
+import com.rockchen.springbootshopmall.util.Page;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
@@ -24,7 +25,7 @@ public class ProductController {
     ProductService productService;
 
     @GetMapping("/products")
-    public ResponseEntity<List<Product>> getProducts(
+    public ResponseEntity<Page<Product>> getProducts(
             // 查詢條件 Filtering
             @RequestParam(required = false) ProductCategory category, // required = false => 設定category請求參數不是必填
             @RequestParam(required = false) String search,
@@ -44,9 +45,20 @@ public class ProductController {
         productQueryParams.setLimit(limit);
         productQueryParams.setOffset(offset);
 
+        // 根據右邊的查詢條件 - 取得對應的商品數據 productList
         List<Product> productList = productService.getProducts(productQueryParams);
 
-        return ResponseEntity.status(HttpStatus.OK).body(productList);
+        // 查詢商品的總比數有多少 - 取得 Product 總數
+        Integer total = productService.countProduct(productQueryParams);
+
+        // 分頁
+        Page<Product> page = new Page<>();
+        page.setLimit(limit);
+        page.setOffset(offset);
+        page.setTotal(total);
+        page.setResults(productList);
+
+        return ResponseEntity.status(HttpStatus.OK).body(page);
     }
 
 //    轉成Optional的參考

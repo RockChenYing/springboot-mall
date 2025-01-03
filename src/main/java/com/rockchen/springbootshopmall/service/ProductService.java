@@ -10,6 +10,8 @@ import java.util.Optional;
 
 public interface ProductService {
 
+    Integer countProduct(ProductQueryParams productQueryParams);
+
     List<Product> getProducts(ProductQueryParams productQueryParams);
 
 //    Optional<Product> getProductById(Integer productId);
