@@ -38,6 +38,8 @@ public class ProductDaoImpl implements ProductDao {
             sql = sql + " AND product_name LIKE :search";
             map.put("search","%" + productQueryParams.getSearch() + "%");
         }
+        // 拼接ORDER BY的SQL語法，並依據OrderBy所指定欄位，來執行升序或降序動作
+        sql = sql + " ORDER BY " + productQueryParams.getOrderBy() + " " + productQueryParams.getSort();
 
         List<Product> productList = namedParameterJdbcTemplate.query(sql,map,new ProductRowMapper());
 
