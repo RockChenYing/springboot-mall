@@ -28,14 +28,7 @@ public class ProductDaoImpl implements ProductDao {
 
         Map<String, Object> map = new HashMap<>();
 
-        if(productQueryParams.getCategory() != null){
-            sql = sql + " AND category = :category";
-            map.put("category", productQueryParams.getCategory().name());
-        }
-        if(productQueryParams.getSearch() != null){
-            sql = sql + " AND search LIKE :search";
-            map.put("search", "%" + productQueryParams.getSearch() + "%");
-        }
+        sql = addFilteringSql(sql, map, productQueryParams);
 
         Integer total = namedParameterJdbcTemplate.queryForObject(sql, map, Integer.class); // 將count轉換成Integer
 
@@ -49,16 +42,8 @@ public class ProductDaoImpl implements ProductDao {
                      "FROM product WHERE 1=1"; //WHERE 1=1 不會影響查詢的數據，但可以讓sql語法與 AND 拼接使用
         Map<String,Object> map = new HashMap<>();
 
-        // 1.查詢條件
-        if(productQueryParams.getCategory() != null){
-            sql = sql + " AND category = :category ";
-            map.put("category", productQueryParams.getCategory().name());
-        }
-        // 2.排序
-        if(productQueryParams.getSearch() !=null){
-            sql = sql + " AND product_name LIKE :search";
-            map.put("search","%" + productQueryParams.getSearch() + "%");
-        }
+        sql = addFilteringSql(sql, map, productQueryParams);
+
         // 拼接ORDER BY的SQL語法，並依據OrderBy所指定欄位，來執行升序或降序動作
         sql = sql + " ORDER BY " + productQueryParams.getOrderBy() + " " + productQueryParams.getSort();
 
@@ -155,4 +140,17 @@ public class ProductDaoImpl implements ProductDao {
         namedParameterJdbcTemplate.update(sql,map);
     }
 
+    private String addFilteringSql(String sql, Map<String, Object> map, ProductQueryParams productQueryParams){
+        // 1.查詢條件
+        if(productQueryParams.getCategory() != null){
+            sql = sql + " AND category = :category ";
+            map.put("category", productQueryParams.getCategory().name());
+        }
+        // 2.排序
+        if(productQueryParams.getSearch() !=null){
+            sql = sql + " AND product_name LIKE :search";
+            map.put("search","%" + productQueryParams.getSearch() + "%");
+        }
+        return sql;
+    }
 }
