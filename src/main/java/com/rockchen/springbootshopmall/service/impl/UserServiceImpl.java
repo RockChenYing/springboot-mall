@@ -1,6 +1,7 @@
 package com.rockchen.springbootshopmall.service.impl;
 
 import com.rockchen.springbootshopmall.dao.UserDao;
+import com.rockchen.springbootshopmall.dto.UserLoginRequest;
 import com.rockchen.springbootshopmall.dto.UserRegisterRequest;
 import com.rockchen.springbootshopmall.model.User;
 import com.rockchen.springbootshopmall.service.UserService;
@@ -9,6 +10,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.server.ResponseStatusException;
 
 @Component
@@ -37,5 +39,24 @@ public class UserServiceImpl implements UserService {
         }
         // 創建帳號
         return userDao.createUser(userRegisterRequest);
+    }
+
+    @Override
+    public User login(UserLoginRequest userLoginRequest) {
+        User user = userDao.getUserByEmail(userLoginRequest.getEmail());
+
+        // 尚未註冊
+        if(user == null){
+            log.warn("此信箱 {} 還不存在，尚未註冊" ,userLoginRequest.getEmail());
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+        }
+        // 密碼檢驗
+        if(user.getPassword().equals(userLoginRequest.getPassword())){
+            return user;
+        }else{
+            log.warn("email {} 的密碼錯誤，請重新輸入:",userLoginRequest.getEmail());
+            throw new  ResponseStatusException(HttpStatus.BAD_REQUEST);
+        }
+
     }
 }
