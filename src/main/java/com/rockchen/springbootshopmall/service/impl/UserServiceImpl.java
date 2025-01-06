@@ -4,11 +4,17 @@ import com.rockchen.springbootshopmall.dao.UserDao;
 import com.rockchen.springbootshopmall.dto.UserRegisterRequest;
 import com.rockchen.springbootshopmall.model.User;
 import com.rockchen.springbootshopmall.service.UserService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
+import org.springframework.web.server.ResponseStatusException;
 
 @Component
 public class UserServiceImpl implements UserService {
+
+    private final static Logger log = LoggerFactory.getLogger(UserServiceImpl.class);
 
     @Autowired
     UserDao userDao;
@@ -20,6 +26,16 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public Integer register(UserRegisterRequest userRegisterRequest) {
+        // 我預期在userDao中有個方法getUserByEmail，從前端回傳的訊息中，來確認信箱資料是否存在
+
+        User user = userDao.getUserByEmail(userRegisterRequest.getEmail());
+
+        // 檢查註冊的 email- 如果email資料已經存在，就不會去創建一個新的資料出來
+        if( user != null ){
+            log.warn("該電子信箱 {} 已經被註冊", userRegisterRequest.getEmail());
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+        }
+        // 創建帳號
         return userDao.createUser(userRegisterRequest);
     }
 }
