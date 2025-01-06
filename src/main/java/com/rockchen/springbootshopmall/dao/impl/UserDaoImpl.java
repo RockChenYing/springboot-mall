@@ -56,7 +56,9 @@ public class UserDaoImpl implements UserDao {
 //        }
         /*  stream().findFirst()：尋找列表中的第一個元素。  如果列表為空，則返回 Optional.empty()。
             orElse(null)：如果 Optional 中沒有值，則返回 null。 */
-        return userList.stream().findFirst().orElse(null);
+        return userList.stream()
+                       .findFirst()
+                       .orElse(null);
     }
 
     @Override

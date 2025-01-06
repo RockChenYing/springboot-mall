@@ -1,5 +1,6 @@
 package com.rockchen.springbootshopmall.controller;
 
+import com.rockchen.springbootshopmall.dto.UserLoginRequest;
 import com.rockchen.springbootshopmall.dto.UserRegisterRequest;
 import com.rockchen.springbootshopmall.model.User;
 import com.rockchen.springbootshopmall.service.UserService;
@@ -24,6 +25,12 @@ public class UserController {
         User user = userService.getUserById(userId);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(user); //body是要回應客戶端用的
+    }
+
+    @PostMapping("/users/login")
+    public ResponseEntity<User> login(@RequestBody @Valid UserLoginRequest userLoginRequest){
+        User user = userService.login(userLoginRequest);
+        return ResponseEntity.status(HttpStatus.OK).body(user);
     }
 
 
