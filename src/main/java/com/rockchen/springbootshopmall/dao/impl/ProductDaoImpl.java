@@ -1,13 +1,11 @@
 package com.rockchen.springbootshopmall.dao.impl;
 
-import com.rockchen.springbootshopmall.constant.ProductCategory;
 import com.rockchen.springbootshopmall.dao.ProductDao;
-import com.rockchen.springbootshopmall.dao.ProductQueryParams;
+import com.rockchen.springbootshopmall.dto.ProductQueryParams;
 import com.rockchen.springbootshopmall.dto.ProductRequest;
 import com.rockchen.springbootshopmall.model.Product;
 import com.rockchen.springbootshopmall.rowmapper.ProductRowMapper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;

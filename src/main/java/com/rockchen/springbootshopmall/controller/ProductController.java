@@ -1,7 +1,7 @@
 package com.rockchen.springbootshopmall.controller;
 
 import com.rockchen.springbootshopmall.constant.ProductCategory;
-import com.rockchen.springbootshopmall.dao.ProductQueryParams;
+import com.rockchen.springbootshopmall.dto.ProductQueryParams;
 import com.rockchen.springbootshopmall.dto.ProductRequest;
 import com.rockchen.springbootshopmall.model.Product;
 import com.rockchen.springbootshopmall.service.ProductService;

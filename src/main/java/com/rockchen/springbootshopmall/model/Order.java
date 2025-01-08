@@ -3,6 +3,7 @@ package com.rockchen.springbootshopmall.model;
 import lombok.Data;
 
 import java.util.Date;
+import java.util.List;
 
 @Data
 public class Order {
@@ -12,5 +13,7 @@ public class Order {
     private Integer totalAmount;
     private Date createDate;
     private Date lastModifiedDate;
+    // 擴充新變數
+    private List<OrderItem> orderItemList;
 
 }

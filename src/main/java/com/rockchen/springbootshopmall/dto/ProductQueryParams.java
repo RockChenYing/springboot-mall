@@ -1,4 +1,4 @@
-package com.rockchen.springbootshopmall.dao;
+package com.rockchen.springbootshopmall.dto;
 
 import com.rockchen.springbootshopmall.constant.ProductCategory;
 import lombok.Data;
