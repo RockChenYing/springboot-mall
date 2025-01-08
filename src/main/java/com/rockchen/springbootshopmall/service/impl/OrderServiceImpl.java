@@ -5,6 +5,7 @@ import com.rockchen.springbootshopmall.dao.ProductDao;
 import com.rockchen.springbootshopmall.dao.UserDao;
 import com.rockchen.springbootshopmall.dto.BuyItem;
 import com.rockchen.springbootshopmall.dto.CreateOrderRequest;
+import com.rockchen.springbootshopmall.dto.OrderQueryParams;
 import com.rockchen.springbootshopmall.model.Order;
 import com.rockchen.springbootshopmall.model.OrderItem;
 import com.rockchen.springbootshopmall.model.Product;
@@ -34,6 +35,23 @@ public class OrderServiceImpl implements OrderService {
 
     @Autowired
     ProductDao productDao;
+
+    @Override
+    public Integer countOrder(OrderQueryParams orderQueryParams) {
+        return orderDao.countOrder(orderQueryParams);
+    }
+
+    @Override
+    public List<Order> getOrders(OrderQueryParams orderQueryParams) {
+        List<Order> orderList = orderDao.getOrders(orderQueryParams);
+
+        for(Order order : orderList) {
+            List<OrderItem> orderItemList = orderDao.getOrderItemsByOrderId(order.getOrderId());
+
+            order.setOrderItemList(orderItemList);
+        }
+        return orderList;
+    }
 
     @Override
     public Order getOrderById(Integer orderId) {
