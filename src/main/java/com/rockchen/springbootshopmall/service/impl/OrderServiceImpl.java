@@ -4,6 +4,7 @@ import com.rockchen.springbootshopmall.dao.OrderDao;
 import com.rockchen.springbootshopmall.dao.ProductDao;
 import com.rockchen.springbootshopmall.dto.BuyItem;
 import com.rockchen.springbootshopmall.dto.CreateOrderRequest;
+import com.rockchen.springbootshopmall.model.Order;
 import com.rockchen.springbootshopmall.model.OrderItem;
 import com.rockchen.springbootshopmall.model.Product;
 import com.rockchen.springbootshopmall.service.OrderService;
@@ -22,6 +23,19 @@ public class OrderServiceImpl implements OrderService {
 
     @Autowired
     ProductDao productDao;
+
+    @Override
+    public Order getOrderById(Integer orderId) {
+        Order order = orderDao.getOrderById(orderId);
+        if(order != null) {
+            List<OrderItem> orderItemList = orderDao.getOrderItemsByOrderId(orderId);
+
+            order.setOrderItemList(orderItemList);
+        }else{
+            throw new IllegalArgumentException("Order not found for ID: " + orderId);
+        }
+        return order;
+    }
 
     @Transactional
     @Override
@@ -45,12 +59,11 @@ public class OrderServiceImpl implements OrderService {
             orderItemList.add(orderItem);
 
         }
-
         // 創建訂單，由於Order是由兩張table管理，因此呼叫Dao，創建資料在Order，接著在創建於OrderItem
         Integer orderId = orderDao.createOrder(userId,totalAmount);
 
         orderDao.createOrderItems(orderId, orderItemList);
 
-        return 0;
+        return orderId;
     }
 }
