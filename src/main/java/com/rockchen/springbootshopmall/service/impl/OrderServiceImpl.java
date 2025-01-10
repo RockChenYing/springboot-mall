@@ -1,8 +1,8 @@
 package com.rockchen.springbootshopmall.service.impl;
 
 import com.rockchen.springbootshopmall.dao.OrderDao;
-import com.rockchen.springbootshopmall.dao.UserDao;
 import com.rockchen.springbootshopmall.dao.repository.ProductRepository;
+import com.rockchen.springbootshopmall.dao.repository.UserRepository;
 import com.rockchen.springbootshopmall.dto.BuyItem;
 import com.rockchen.springbootshopmall.dto.CreateOrderRequest;
 import com.rockchen.springbootshopmall.dto.OrderQueryParams;
@@ -31,10 +31,9 @@ public class OrderServiceImpl implements OrderService {
     OrderDao orderDao;
 
     @Autowired
-    UserDao userDao;
-
-    @Autowired
     ProductRepository productRepository;
+    @Autowired
+    private UserRepository userRepository;
 
     @Override
     public Integer countOrder(OrderQueryParams orderQueryParams) {
@@ -69,10 +68,11 @@ public class OrderServiceImpl implements OrderService {
     @Transactional
     @Override
     public Integer createOrder(Integer userId, CreateOrderRequest createOrderRequest) {
-        User user = userDao.getUserById(userId);
+        // 1. 檢查使用者 User 是否存在
+        User user = userRepository.findById(userId).orElse(null);
         if(user == null){
-            logger.warn(" 該使用者Id {} 不存在", userId);
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+            logger.warn(" 該使用者 {} 不存在 ", userId);
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"使用者不存在");
         }
 
         int totalAmount = 0;
