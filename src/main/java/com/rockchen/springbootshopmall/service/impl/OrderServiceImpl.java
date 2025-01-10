@@ -1,8 +1,8 @@
 package com.rockchen.springbootshopmall.service.impl;
 
 import com.rockchen.springbootshopmall.dao.OrderDao;
-import com.rockchen.springbootshopmall.dao.ProductDao;
 import com.rockchen.springbootshopmall.dao.UserDao;
+import com.rockchen.springbootshopmall.dao.repository.ProductRepository;
 import com.rockchen.springbootshopmall.dto.BuyItem;
 import com.rockchen.springbootshopmall.dto.CreateOrderRequest;
 import com.rockchen.springbootshopmall.dto.OrderQueryParams;
@@ -34,7 +34,7 @@ public class OrderServiceImpl implements OrderService {
     UserDao userDao;
 
     @Autowired
-    ProductDao productDao;
+    ProductRepository productRepository;
 
     @Override
     public Integer countOrder(OrderQueryParams orderQueryParams) {
@@ -79,7 +79,8 @@ public class OrderServiceImpl implements OrderService {
         List<OrderItem> orderItemList = new ArrayList<>();
 
         for(BuyItem buyItem : createOrderRequest.getBuyItemList()){
-            Product product = productDao.getProductById(buyItem.getProductId()); // 取得商品info
+            Product product = productRepository.findById(buyItem.getProductId())
+                                               .orElse(null); // 取得商品info
 
             // 檢查 product 是否存在、庫存是否足夠
             if(product == null){
@@ -93,8 +94,9 @@ public class OrderServiceImpl implements OrderService {
                 }
             }
 
-            // 扣除商品庫存- 目前商品庫存 減去 購買的商品數量
-            productDao.updateStock(product.getProductId(),product.getStock() - buyItem.getQuantity());
+            // 商品庫存 - 目前商品庫存 減去 購買的商品數量，再存到資料庫
+            product.setStock(product.getStock() - buyItem.getQuantity());
+            productRepository.save(product);
 
             // 計算總價錢
             int amount = buyItem.getQuantity() * product.getPrice();

@@ -1,6 +1,8 @@
 package com.rockchen.springbootshopmall.dto;
 
 import com.rockchen.springbootshopmall.constant.ProductCategory;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import lombok.Data;
 
 /**
