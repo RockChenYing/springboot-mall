@@ -1,7 +1,7 @@
 package com.rockchen.springbootshopmall.controller;
 
 import com.rockchen.springbootshopmall.dto.UserLoginRequest;
-import com.rockchen.springbootshopmall.dto.UserRegisterRequest;
+import com.rockchen.springbootshopmall.dto.UserRegisterRequestDto;
 import com.rockchen.springbootshopmall.model.User;
 import com.rockchen.springbootshopmall.service.UserService;
 import jakarta.validation.Valid;
@@ -19,8 +19,8 @@ public class UserController {
     private UserService userService;
 
     @PostMapping("/users/register")
-    public ResponseEntity<User> register(@RequestBody @Valid UserRegisterRequest userRegisterRequest) {
-        Integer userId = userService.register(userRegisterRequest);
+    public ResponseEntity<User> register(@RequestBody @Valid UserRegisterRequestDto userRegisterRequestDto) {
+        Integer userId = userService.register(userRegisterRequestDto);
 
         User user = userService.getUserById(userId);
 

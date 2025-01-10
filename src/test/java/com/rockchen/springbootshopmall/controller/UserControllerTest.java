@@ -3,7 +3,7 @@ package com.rockchen.springbootshopmall.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rockchen.springbootshopmall.dao.UserDao;
 import com.rockchen.springbootshopmall.dto.UserLoginRequest;
-import com.rockchen.springbootshopmall.dto.UserRegisterRequest;
+import com.rockchen.springbootshopmall.dto.UserRegisterRequestDto;
 import com.rockchen.springbootshopmall.model.User;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,11 +35,11 @@ public class UserControllerTest {
     // 註冊新帳號
     @Test
     public void register_success() throws Exception {
-        UserRegisterRequest userRegisterRequest = new UserRegisterRequest();
-        userRegisterRequest.setEmail("test1@gmail.com");
-        userRegisterRequest.setPassword("123");
+        UserRegisterRequestDto userRegisterRequestDto = new UserRegisterRequestDto();
+        userRegisterRequestDto.setEmail("test1@gmail.com");
+        userRegisterRequestDto.setPassword("123");
 
-        String json = objectMapper.writeValueAsString(userRegisterRequest);
+        String json = objectMapper.writeValueAsString(userRegisterRequestDto);
 
         RequestBuilder requestBuilder = MockMvcRequestBuilders
                 .post("/users/register")
@@ -54,17 +54,17 @@ public class UserControllerTest {
                 .andExpect(jsonPath("$.lastModifiedDate", notNullValue()));
 
         // 檢查資料庫中的密碼不為明碼
-        User user = userDao.getUserByEmail(userRegisterRequest.getEmail());
-        assertNotEquals(userRegisterRequest.getPassword(), user.getPassword());
+        User user = userDao.getUserByEmail(userRegisterRequestDto.getEmail());
+        assertNotEquals(userRegisterRequestDto.getPassword(), user.getPassword());
     }
 
     @Test  // 驗證email格式是否正確
     public void register_invalidEmailFormat() throws Exception {
-        UserRegisterRequest userRegisterRequest = new UserRegisterRequest();
-        userRegisterRequest.setEmail("3gd8e7q34l9");
-        userRegisterRequest.setPassword("123");
+        UserRegisterRequestDto userRegisterRequestDto = new UserRegisterRequestDto();
+        userRegisterRequestDto.setEmail("3gd8e7q34l9");
+        userRegisterRequestDto.setPassword("123");
 
-        String json = objectMapper.writeValueAsString(userRegisterRequest);
+        String json = objectMapper.writeValueAsString(userRegisterRequestDto);
 
         RequestBuilder requestBuilder = MockMvcRequestBuilders
                 .post("/users/register")
@@ -78,11 +78,11 @@ public class UserControllerTest {
     @Test
     public void register_emailAlreadyExist() throws Exception {
         // 先註冊一個帳號
-        UserRegisterRequest userRegisterRequest = new UserRegisterRequest();
-        userRegisterRequest.setEmail("test2@gmail.com");
-        userRegisterRequest.setPassword("123");
+        UserRegisterRequestDto userRegisterRequestDto = new UserRegisterRequestDto();
+        userRegisterRequestDto.setEmail("test2@gmail.com");
+        userRegisterRequestDto.setPassword("123");
 
-        String json = objectMapper.writeValueAsString(userRegisterRequest);
+        String json = objectMapper.writeValueAsString(userRegisterRequestDto);
 
         RequestBuilder requestBuilder = MockMvcRequestBuilders
                 .post("/users/register")
@@ -101,18 +101,18 @@ public class UserControllerTest {
     @Test
     public void login_success() throws Exception {
         // 先註冊新帳號
-        UserRegisterRequest userRegisterRequest = new UserRegisterRequest();
-        userRegisterRequest.setEmail("rock@gmail.com");
-        userRegisterRequest.setPassword("0000");
+        UserRegisterRequestDto userRegisterRequestDto = new UserRegisterRequestDto();
+        userRegisterRequestDto.setEmail("rock@gmail.com");
+        userRegisterRequestDto.setPassword("0000");
 
-        register(userRegisterRequest);
+        register(userRegisterRequestDto);
 
         // 再測試登入功能
         UserLoginRequest userLoginRequest = new UserLoginRequest();
-        userLoginRequest.setEmail(userRegisterRequest.getEmail());
-        userLoginRequest.setPassword(userRegisterRequest.getPassword());
+        userLoginRequest.setEmail(userRegisterRequestDto.getEmail());
+        userLoginRequest.setPassword(userRegisterRequestDto.getPassword());
 
-        String json = objectMapper.writeValueAsString(userRegisterRequest);
+        String json = objectMapper.writeValueAsString(userRegisterRequestDto);
 
         RequestBuilder requestBuilder = MockMvcRequestBuilders
                 .post("/users/login")
@@ -122,7 +122,7 @@ public class UserControllerTest {
         mockMvc.perform(requestBuilder)
                 .andExpect(status().is(200))
                 .andExpect(jsonPath("$.userId", notNullValue()))
-                .andExpect(jsonPath("$.email", equalTo(userRegisterRequest.getEmail())))
+                .andExpect(jsonPath("$.email", equalTo(userRegisterRequestDto.getEmail())))
                 .andExpect(jsonPath("$.createdDate", notNullValue()))
                 .andExpect(jsonPath("$.lastModifiedDate", notNullValue()));
     }
@@ -130,15 +130,15 @@ public class UserControllerTest {
     @Test
     public void login_wrongPassword() throws Exception {
         // 先註冊新帳號
-        UserRegisterRequest userRegisterRequest = new UserRegisterRequest();
-        userRegisterRequest.setEmail("test4@gmail.com");
-        userRegisterRequest.setPassword("123");
+        UserRegisterRequestDto userRegisterRequestDto = new UserRegisterRequestDto();
+        userRegisterRequestDto.setEmail("test4@gmail.com");
+        userRegisterRequestDto.setPassword("123");
 
-        register(userRegisterRequest);
+        register(userRegisterRequestDto);
 
         // 測試密碼輸入錯誤的情況
         UserLoginRequest userLoginRequest = new UserLoginRequest();
-        userLoginRequest.setEmail(userRegisterRequest.getEmail());
+        userLoginRequest.setEmail(userRegisterRequestDto.getEmail());
         userLoginRequest.setPassword("unknown");
 
         String json = objectMapper.writeValueAsString(userLoginRequest);
@@ -186,8 +186,8 @@ public class UserControllerTest {
                 .andExpect(status().is(400));
     }
 
-    private void register(UserRegisterRequest userRegisterRequest) throws Exception {
-        String json = objectMapper.writeValueAsString(userRegisterRequest);
+    private void register(UserRegisterRequestDto userRegisterRequestDto) throws Exception {
+        String json = objectMapper.writeValueAsString(userRegisterRequestDto);
 
         RequestBuilder requestBuilder = MockMvcRequestBuilders
                 .post("/users/register")
