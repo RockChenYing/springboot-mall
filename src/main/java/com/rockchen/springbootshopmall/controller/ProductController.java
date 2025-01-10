@@ -2,7 +2,7 @@ package com.rockchen.springbootshopmall.controller;
 
 import com.rockchen.springbootshopmall.constant.ProductCategory;
 import com.rockchen.springbootshopmall.dto.ProductQueryParams;
-import com.rockchen.springbootshopmall.dto.ProductRequest;
+import com.rockchen.springbootshopmall.dto.ProductRequestDto;
 import com.rockchen.springbootshopmall.model.Product;
 import com.rockchen.springbootshopmall.service.ProductService;
 import com.rockchen.springbootshopmall.util.Page;
@@ -85,9 +85,9 @@ public class ProductController {
     }
 
     @PostMapping("/products")
-    public ResponseEntity<Product> createProduct(@RequestBody @Valid ProductRequest productRequest){
+    public ResponseEntity<Product> createProduct(@RequestBody @Valid ProductRequestDto productRequestDto){
         // 我預期在productService有新增商品的方法，是透過Id的方式
-        Integer productId = productService.createProduct(productRequest);
+        Integer productId = productService.createProduct(productRequestDto);
 
         Product product = productService.getProductById(productId);
 //        productService.getProductById(productService.createProduct(productRequest);
@@ -96,7 +96,7 @@ public class ProductController {
     // 修改步驟有兩個
     @PutMapping("/products/{productId}")
     public ResponseEntity<Product> updateProduct(@PathVariable Integer productId,
-                                                 @RequestBody @Valid ProductRequest productRequest){
+                                                 @RequestBody @Valid ProductRequestDto productRequestDto){
         // 第一步：先檢查 product 是否存在
         Product product = productService.getProductById(productId);
         if(product == null){
@@ -104,7 +104,7 @@ public class ProductController {
         }
         // 第二步：如果商品有存在，修改商品的數據
         // 使用Service層中，修改商品的方法，透過productId找到商品，再根據dto-productRequest的資料進行更新
-        productService.updateProduct(productId, productRequest);
+        productService.updateProduct(productId, productRequestDto);
         // 透過 getProductById 方法取得指定 productId 的商品資料，用於"確認"剛剛更新的內容是否正確。
         Product updateProduct = productService.getProductById(productId);
 

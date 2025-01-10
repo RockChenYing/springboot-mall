@@ -3,10 +3,9 @@ package com.rockchen.springbootshopmall.dto;
 import com.rockchen.springbootshopmall.constant.ProductCategory;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
-import org.springframework.beans.factory.annotation.Autowired;
 
 @Data
-public class ProductRequest {
+public class ProductRequestDto {
 
     @NotNull
     private String productName;
