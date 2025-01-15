@@ -1,10 +1,12 @@
 package com.rockchen.springbootshopmall.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.rockchen.springbootshopmall.constant.ProductCategory;
 import jakarta.persistence.*;
 import lombok.Data;
 
 import java.util.Date;
+import java.util.List;
 
 @Entity // JPA 註解，標記這個類是一個實體類。
 @Table(name = "product") // 對應到哪張table
@@ -16,12 +18,14 @@ public class Product {
    @Column(name = "product_id")
    private Integer productId;
 
+
    @Column(name = "product_name", nullable = false) // 表示該欄位不可為空值
    private String productName;
 
    @Enumerated(EnumType.STRING)
    @Column(name = "category")
    private ProductCategory category;
+
 
    @Column(name = "image_url")
    private String imageUrl;
@@ -42,5 +46,9 @@ public class Product {
    @Temporal(TemporalType.TIMESTAMP)
    @Column(name = "last_modified_date")
    private Date lastModifiedDate;
+
+   @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+   @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+   private List<OrderItem> orderItemList;
 
 }
