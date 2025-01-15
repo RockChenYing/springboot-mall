@@ -1,6 +1,6 @@
 package com.rockchen.springbootshopmall.service.impl;
 
-import com.rockchen.springbootshopmall.dao.OrderDao;
+import com.rockchen.springbootshopmall.dao.repository.OrderRepository;
 import com.rockchen.springbootshopmall.dao.repository.ProductRepository;
 import com.rockchen.springbootshopmall.dao.repository.UserRepository;
 import com.rockchen.springbootshopmall.dto.BuyItem;
@@ -14,12 +14,15 @@ import com.rockchen.springbootshopmall.service.OrderService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 @Component
@@ -28,37 +31,47 @@ public class OrderServiceImpl implements OrderService {
     public static final Logger logger = LoggerFactory.getLogger(OrderServiceImpl.class);
 
     @Autowired
-    OrderDao orderDao;
-
-    @Autowired
     ProductRepository productRepository;
     @Autowired
     private UserRepository userRepository;
+    @Autowired
+    OrderRepository orderRepository;
 
-    @Override
+    @Override // 計算訂單的總數
     public Integer countOrder(OrderQueryParams orderQueryParams) {
-        return orderDao.countOrder(orderQueryParams);
+        Integer userId = orderQueryParams.getUserId();
+        return orderRepository.countOrder(userId);
     }
 
     @Override
-    public List<Order> getOrders(OrderQueryParams orderQueryParams) {
-        List<Order> orderList = orderDao.getOrders(orderQueryParams);
-
-        for(Order order : orderList) {
-            List<OrderItem> orderItemList = orderDao.getOrderItemsByOrderId(order.getOrderId());
-
-            order.setOrderItemList(orderItemList);
-        }
-        return orderList;
+    public Page<Order> getOrders(Integer userId, Pageable pageable) {
+//        List<Order> orderList = orderRepository.findByOrders(userId, pageable);
+//
+//        for(Order order : orderList) {
+//            List<OrderItem> orderItemList = orderRepository.findOrderItemsbyOrderId(order.getOrderId());
+//
+//            order.setOrderItemList(orderItemList);
+//        }
+        return orderRepository.findByUserId(userId , pageable);
     }
 
     @Override
     public Order getOrderById(Integer orderId) {
-        Order order = orderDao.getOrderById(orderId);
+        Order order = orderRepository.findById(orderId).orElse(null);
         if(order != null) {
-            List<OrderItem> orderItemList = orderDao.getOrderItemsByOrderId(orderId);
-
+            // 查詢 OrderItem
+            List<OrderItem> orderItemList = orderRepository.findOrderItemsbyOrderId(orderId);
+            // 將商品列表填入訂單中
             order.setOrderItemList(orderItemList);
+
+            // 載入每個 OrderItem 產品的照片，但要先確認產品是存在的
+            for(OrderItem orderItem : orderItemList){
+                if(orderItem.getProduct() != null){
+                    String imageUrl = orderItem.getProduct().getImageUrl();
+                    logger.info("Product ID: {}, Image URL: {}", orderItem.getProduct().getProductId(), imageUrl);
+                }
+            }
+
         }else{
             throw new IllegalArgumentException("Order not found for ID: " + orderId);
         }
@@ -69,53 +82,56 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public Integer createOrder(Integer userId, CreateOrderRequest createOrderRequest) {
         // 1. 檢查使用者 User 是否存在
-        User user = userRepository.findById(userId).orElse(null);
-        if(user == null){
-            logger.warn(" 該使用者 {} 不存在 ", userId);
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"使用者不存在");
-        }
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST,"使用者不存在"));
 
-        int totalAmount = 0;
+        // 2. 創建訂單
+        Order order = new Order();
+        order.setUserId(userId);
+        Date date = new Date();
+        order.setCreatedDate(date);
+        order.setLastModifiedDate(date);
+
+        // 3. 處理訂單項目
         List<OrderItem> orderItemList = new ArrayList<>();
+        int totalAmount = 0;
 
+        // 檢查 product 是否存在、庫存是否足夠
         for(BuyItem buyItem : createOrderRequest.getBuyItemList()){
             Product product = productRepository.findById(buyItem.getProductId())
-                                               .orElse(null); // 取得商品info
-
-            // 檢查 product 是否存在、庫存是否足夠
-            if(product == null){
-                logger.warn("商品 {} 不存在 ", buyItem.getProductId());
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
-            }else{
-                if(product.getStock() < buyItem.getQuantity()){
-                    logger.warn("商品 {} 庫存不足無法購買，剩餘庫存 {} ，欲購買數量 {} ",
-                                product.getStock(), buyItem.getQuantity());
-                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
-                }
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST,"商品不存在")); // 取得商品info
+            // 庫存狀況
+            if(product.getStock() < buyItem.getQuantity()){
+                logger.warn("商品 {} 庫存不足無法購買，剩餘庫存 {} ， 欲購買數量 {}",
+                       buyItem.getProductId(),product.getStock(),buyItem.getQuantity());
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"庫存不足");
             }
 
-            // 商品庫存 - 目前商品庫存 減去 購買的商品數量，再存到資料庫
+            // 更新商品庫存 ： 目前商品庫存 - 購買的商品數量，再存到資料庫
             product.setStock(product.getStock() - buyItem.getQuantity());
             productRepository.save(product);
 
             // 計算總價錢
             int amount = buyItem.getQuantity() * product.getPrice();
-            totalAmount = totalAmount + amount;
+            totalAmount += amount;
 
             // 轉換 BuyItem to OrderItem
             OrderItem orderItem = new OrderItem();
-            orderItem.setProductId(buyItem.getProductId());
+            orderItem.setOrder(order); // 設置關聯
+            orderItem.setProduct(product);
             orderItem.setQuantity(buyItem.getQuantity());
             orderItem.setAmount(amount);
-
             orderItemList.add(orderItem);
 
         }
-        // 創建訂單，由於Order是由兩張table管理，因此呼叫Dao，創建資料在Order，接著在創建於OrderItem
-        Integer orderId = orderDao.createOrder(userId,totalAmount);
 
-        orderDao.createOrderItems(orderId, orderItemList);
+        // 4. 設置訂單總金額和項目列表
+        order.setTotalAmount(totalAmount);
+        order.setOrderItemList(orderItemList);
 
-        return orderId;
+        // 5. 儲存訂單
+        Order savedOrder = orderRepository.save(order);
+
+        return savedOrder.getOrderId();
     }
 }
