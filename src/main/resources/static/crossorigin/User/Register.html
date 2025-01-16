@@ -1,0 +1,46 @@
+
+<head>
+  <meta charset="UTF-8">
+  <title>商品管理系統</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+
+
+<div class="container">
+  <!-- 新增商品表單 -->
+  <div class="form-container">
+    <h3>新增商品</h3>
+    <form id="productForm" style="margin-bottom: 20px;">
+      <div class="form-group">
+        <label for="productName">商品名稱:</label>
+        <input type="text" class="form-control" id="productName" required>
+      </div>
+      <div class="form-group">
+        <label for="category">商品分類:</label>
+        <select id="category" class="form-control" required>
+          <option value="FOOD">食品</option>
+          <option value="CAR">汽車</option>
+          <option value="E_BOOK">電子書</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="imageUrl">照片:</label>
+        <input type="text" class="form-control" id="imageUrl" required>
+      </div>
+      <div class="form-group">
+        <label for="price">價格:</label>
+        <input type="number" class="form-control" id="price" required>
+      </div>
+      <div class="form-group">
+        <label for="stock">庫存:</label>
+        <input type="number" class="form-control" id="stock" required>
+      </div>
+      <div class="form-group">
+        <label for="description">商品介紹:</label>
+        <textarea id="description" class="form-control"></textarea>
+      </div>
+      <button type="button" class="btn btn-primary" id="createProduct">新增商品</button>
+    </form>
+  </div>
+</div>

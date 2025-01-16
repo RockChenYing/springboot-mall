@@ -39,7 +39,7 @@ public class OrderController {
 //            @RequestParam(defaultValue = "0") @Min(0) Integer offSet
     ){
         // 創建 Pageable：依照創建的時間來排序，並採用降序方式，從新到舊
-        Pageable pageable = PageRequest.of(page, size, Sort.by("createdOrder").descending());
+        Pageable pageable = PageRequest.of(page, size, Sort.by("createdDate").descending());
 
         // 實作 orderService層 的方法，並返回結果
         Page<Order> orders = orderService.getOrders(userId,pageable);

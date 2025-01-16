@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <title>編輯商品</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .container { max-width: 800px; margin: 20px auto; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>編輯商品</h1>
+    <form id="productForm">
+        <div class="form-group">
+            <label for="productName">商品名稱:</label>
+            <input type="text" class="form-control" id="productName" name="productName" required>
+        </div>
+        <div class="form-group">
+            <label for="category">商品分類:</label>
+            <input type="text" class="form-control" id="category" name="category" required>
+        </div>
+        <div class="form-group">
+            <label for="imageUrl">照片:</label>
+            <input type="text" class="form-control" id="imageUrl" name="imageUrl" required>
+        </div>
+        <div class="form-group">
+            <label for="price">價格:</label>
+            <input type="number" class="form-control" id="price" name="price" required>
+        </div>
+        <div class="form-group">
+            <label for="stock">庫存:</label>
+            <input type="number" class="form-control" id="stock" name="stock" required>
+        </div>
+        <div class="form-group">
+            <label for="description">商品介紹:</label>
+            <textarea class="form-control" id="description" name="description"></textarea>
+        </div>
+        <button type="button" class="btn btn-primary" id="editProduct">更新商品</button>
+    </form>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script>
+    $(document).ready(function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const productId = urlParams.get('id');
+
+        // 加載商品資料
+        $.ajax({
+            url: `/products/${productId}`,
+            method: 'GET',
+            success: function(product) {
+                $('#productName').val(product.productName);
+                $('#category').val(product.category);
+                $('#imageUrl').val(product.imageUrl);
+                $('#price').val(product.price);
+                $('#stock').val(product.stock);
+                $('#description').val(product.description);
+            },
+            error: function() {
+                alert('載入商品資料失敗');
+                window.location.href = 'product.html';
+            }
+        });
+
+        // 修改商品
+        // $('#editProduct').on('submit', function(e) {
+        $('#editProduct').click(function(e) {
+            e.preventDefault(); // 防止表單默認提交行為
+            // if (!validateForm()) return;
+            const editProduct = {
+                productName: $('#productName').val(),
+                category: $('#category').val(),
+                imageUrl: $('#imageUrl').val(),
+                price: parseInt($('#price').val(), 10), // 10進制式
+                stock: parseInt($('#stock').val(), 10),
+                description: $('#description').val()
+            };
+
+            $.ajax({
+                url: `/products/${productId}`,
+                method: 'PUT',
+                contentType: 'application/json',
+                data: JSON.stringify(editProduct),
+                success: function(response) {
+                    alert('商品更新成功！');
+                    window.location.href = 'product.html';
+                },
+                error: function(xhr) {
+                    alert('更新失敗：' + xhr.responseText);
+                }
+            });
+        });
+
+        // 取消按鈕
+        $('#cancelBtn').click(function() {
+            window.location.href = 'product.html';
+        });
+
+        // 表單驗證
+        function validateForm() {
+            let isValid = true;
+            $('.error').remove();
+
+            ['productName', 'category', 'imageUrl', 'price', 'stock'].forEach(field => {
+                const $field = $(`#${field}`);
+                const value = $field.val();
+                if (!value || value.trim() === '') {
+                    isValid = false;
+                    $field.after(`<div class="error">${field} 為必填項</div>`);
+                }
+            });
+
+            const price = $('#price').val();
+            if (isNaN(price) || price < 0) {
+                isValid = false;
+                $('#price').after('<div class="error">價格必須為正數</div>');
+            }
+
+            const stock = $('#stock').val();
+            if (!Number.isInteger(Number(stock)) || stock < 0) {
+                isValid = false;
+                $('#stock').after('<div class="error">庫存必須為正整數</div>');
+            }
+
+            return isValid;
+        }
+    });
+</script>
+</body>
+</html>

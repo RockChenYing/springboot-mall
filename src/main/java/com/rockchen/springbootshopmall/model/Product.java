@@ -1,6 +1,7 @@
 package com.rockchen.springbootshopmall.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.rockchen.springbootshopmall.constant.ProductCategory;
 import jakarta.persistence.*;
 import lombok.Data;
@@ -8,6 +9,7 @@ import lombok.Data;
 import java.util.Date;
 import java.util.List;
 
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "orderItemList"})
 @Entity // JPA 註解，標記這個類是一個實體類。
 @Table(name = "product") // 對應到哪張table
 @Data
@@ -47,8 +49,8 @@ public class Product {
    @Column(name = "last_modified_date")
    private Date lastModifiedDate;
 
-   @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+   @JsonManagedReference
+//   @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
    private List<OrderItem> orderItemList;
-
 }
