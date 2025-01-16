@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <title>商品管理系統</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <!--新增商品表單的樣式-->
+    <style>
+        .form-container {
+            background-color: #00AEAE; /* 背景顏色 */
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            max-width: 400px; /* 設置表單寬度 */
+            margin: 0 auto; /* 居中對齊 */
+        }
+
+        h2 {
+            text-align: center; /* 標題置中 */
+            color: white; /* 標題文字顏色 */
+        }
+
+        .form-container label {
+            font-weight: bold; /* 標籤加粗 */
+        }
+
+        .form-container .btn-primary {
+            background-color: #ff4500; /* 深橙色按鈕 */
+            border: none;
+        }
+
+        .form-container .btn-primary:hover {
+            background-color: #e63e00; /* 深橙色 hover 效果 */
+        }
+    </style>
+
+
+
+    <!--查詢所有商品的樣式-->
+    <style>
+        .container {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
+        }
+        .search-bar {
+            margin-bottom: 20px;
+            display: flex;
+            gap: 10px;
+        }
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .btn-primary { background-color: #007bff; color: white; }
+        .btn-success { background-color: #28a745; color: white; }
+        .form-control {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            width: 200px;
+        }
+        .product-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        .error { color: red; margin: 10px 0; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+<!-- 新增商品表單 -->
+<div class="form-container">
+    <h2>新增商品</h2>
+
+    <form id="productForm">
+        <div class="form-group">
+            <label for="productName">商品名稱:</label>
+            <input type="text" class="form-control" id="productName" required>
+        </div>
+        <div class="form-group">
+            <label for="category">商品分類:</label>
+            <select id="category" class="form-control" required>
+                <option value="FOOD">食品</option>
+                <option value="CAR">汽車</option>
+                <option value="E_BOOK">電子書</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="imageUrl">照片:</label>
+            <input type="text" class="form-control" id="imageUrl" required>
+        </div>
+        <div class="form-group">
+            <label for="price">價格:</label>
+            <input type="number" class="form-control" id="price" required>
+        </div>
+        <div class="form-group">
+            <label for="stock">庫存:</label>
+            <input type="number" class="form-control" id="stock" required>
+        </div>
+        <div class="form-group">
+            <label for="description">商品介紹:</label>
+            <textarea id="description" class="form-control"></textarea>
+        </div>
+        <button type="button" class="btn btn-primary" id="createProduct">新增商品</button>
+    </form>
+</div>
+</div>
+
+
+<!-- 查詢功能 -->
+<div class="container">
+    <div class="search-bar">
+        <input type="text" id="searchInput" class="form-control" placeholder="搜尋商品...">
+        <select id="categoryFilter" class="form-control">
+            <option value="">所有類別</option>
+            <option value="FOOD">食品</option>
+            <option value="CAR">汽車</option>
+            <option value="E_BOOK">電子書</option>
+        </select>
+        <button id="searchBtn" class="btn btn-primary">
+            <i class="fas fa-search"></i> 搜尋
+        </button>
+        <button id="resetBtn" class="btn btn-success">
+            <i class="fas fa-sync"></i> 顯示所有商品
+        </button>
+    </div>
+
+    <div id="productList" class="product-grid"></div>
+    <div id="pagination"></div>
+
+
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script>
+
+    $('#createProduct').click(function () {
+        const productData = {
+            productName: $('#productName').val(),
+            category: $('#category').val(),
+            imageUrl: $('#imageUrl').val(),
+            price: parseInt($('#price').val(), 10),
+            stock: parseInt($('#stock').val(), 10),
+            description: $('#description').val()
+        };
+
+        $.ajax({
+            url: '/products',
+            method: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify(productData),
+            success: function () {
+                alert('商品新增成功！');
+                loadProducts(); // 重新加載商品列表
+            },
+            error: function () {
+                alert('新增商品失敗！');
+            }
+        });
+    });
+
+
+    $(document).ready(function() {
+        // 顯示/隱藏新增表單
+        $('#showFormBtn').click(() => $('#productForm').slideDown());
+        $('#cancelBtn').click(() => {
+            $('#productForm').slideUp();
+            clearForm();
+        });
+
+        // 提交新商品
+        $('#submitProduct').click(function() {
+            if (!validateForm()) return;
+
+            const productData = {
+                productName: $('#productName').val(),
+                category: $('#category').val(),
+                imageUrl: $('#imageUrl').val(),
+                price: parseInt($('#price').val()),
+                stock: parseInt($('#stock').val()),
+                description: $('#description').val()
+            };
+
+            $.ajax({
+                url: '/products',
+                method: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(productData),
+                success: function(response) {
+                    alert('商品新增成功！');
+                    $('#productForm').slideUp();
+                    clearForm();
+                    loadProducts();
+                },
+                error: function(xhr) {
+                    alert('新增失敗：' + xhr.responseText);
+                }
+            });
+        });
+
+        // 表單驗證
+        function validateForm() {
+            let isValid = true;
+            $('.error').remove();
+
+            // 檢查必填欄位
+            ['productName', 'category', 'imageUrl', 'price', 'stock'].forEach(field => {
+                const $field = $(`#${field}`);
+                const value = $field.val();
+                if (!value || value.trim() === '') {
+                    isValid = false;
+                    $field.after(`<div class="error">${field} 為必填項</div>`);
+                }
+            });
+
+            // 檢查數值
+            const price = $('#price').val();
+            if (isNaN(price) || price < 0) {
+                isValid = false;
+                $('#price').after('<div class="error">價格必須為正數</div>');
+            }
+
+            const stock = $('#stock').val();
+            if (!Number.isInteger(Number(stock)) || stock < 0) {
+                isValid = false;
+                $('#stock').after('<div class="error">庫存必須為正整數</div>');
+            }
+
+            return isValid;
+        }
+
+        // 清空表單
+        function clearForm() {
+            $('#productForm').find('input, select, textarea').val('');
+            $('.error').remove();
+        }
+
+        // 編輯商品 - 跳轉到編輯頁面
+        window.editProduct = function(productId) {
+            window.location.href = `EditProduct.html?id=${productId}`;
+        };
+
+        // 新增商品代碼如上，
+    });
+
+    $(document).ready(function() {
+        let currentPage = 0;
+        const PAGE_SIZE = 5;
+
+        // 初始加載商品
+        loadProducts();
+
+        // 搜尋按鈕點擊事件
+        $('#searchBtn').click(function() {
+            currentPage = 0;
+            loadProducts();
+        });
+
+        // 重置按鈕點擊事件
+        $('#resetBtn').click(function() {
+            $('#searchInput').val('');
+            $('#categoryFilter').val('');
+            currentPage = 0;
+            loadProducts();
+        });
+
+        // 加載商品列表
+        function loadProducts() {
+            const searchTerm = $('#searchInput').val();
+            const category = $('#categoryFilter').val();
+
+            $.ajax({
+                url: '/products',
+                method: 'GET',
+                data: {
+                    search: searchTerm,
+                    category: category,
+                    limit: PAGE_SIZE,
+                    offset: currentPage * PAGE_SIZE,
+                    orderBy: 'created_date',
+                    sort: 'desc'
+                },
+                success: function(response) {
+                    displayProducts(response);
+                    updatePagination(response.total);
+                },
+                error: function(xhr) {
+                    $('#productList').html('<div class="error">加載失敗：' + xhr.responseText + '</div>');
+                }
+            });
+        }
+
+        // 顯示商品列表
+        function displayProducts(pageData) {
+            const $productList = $('#productList');
+            $productList.empty();
+
+            if (pageData.results.length === 0) {
+                $productList.html('<div>沒有找到商品</div>');
+                return;
+            }
+
+            pageData.results.forEach(product => {
+                const productHtml = `
+                        <div class="product-card" style="border: 1px solid #ddd; padding: 15px; border-radius: 8px;">
+                            <img src="${product.imageUrl}" alt="${product.productName}"
+                                 style="width: 100%; height: 200px; object-fit: cover; border-radius: 4px;">
+                            <h3 style="margin: 10px 0;">${product.productName}</h3>
+                            <p>類別: ${product.category}</p>
+                            <p>價格: NT$ ${product.price}</p>
+                            <p>庫存: ${product.stock}</p>
+                            <p>描述: ${product.description || '無'}</p>
+                            <div style="margin-top: 10px;">
+                                <button onclick="editProduct(${product.productId})"
+                                        class="btn btn-primary" style="margin-right: 10px;">
+                                    <i class="fas fa-edit"></i> 編輯
+                                </button>
+                                <button onclick="deleteProduct(${product.productId})"
+                                        class="btn btn-danger">
+                                    <i class="fas fa-trash"></i> 刪除
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                $productList.append(productHtml);
+            });
+        }
+
+        // 更新分頁
+        function updatePagination(total) {
+            const totalPages = Math.ceil(total / PAGE_SIZE);
+            const $pagination = $('#pagination');
+            $pagination.empty();
+
+            if (totalPages <= 1) return;
+
+            const paginationHtml = `
+                    <div style="margin-top: 20px; text-align: center;">
+                        ${currentPage > 0 ?
+                `<button onclick="changePage(${currentPage - 1})" class="btn btn-primary" style="margin-right: 10px;">
+                                上一頁
+                            </button>` : ''}
+                        <span>第 ${currentPage + 1} 頁，共 ${totalPages} 頁</span>
+                        ${currentPage < totalPages - 1 ?
+                `<button onclick="changePage(${currentPage + 1})" class="btn btn-primary" style="margin-left: 10px;">
+                                下一頁
+                            </button>` : ''}
+                    </div>
+                `;
+            $pagination.html(paginationHtml);
+        }
+
+        // 切換頁面
+        window.changePage = function(page) {
+            currentPage = page;
+            loadProducts();
+        };
+
+        // 刪除商品
+        window.deleteProduct = function(productId) {
+            if (!confirm('確定要刪除這個商品嗎？')) return;
+
+            $.ajax({
+                url: `/products/${productId}`,
+                method: 'DELETE',
+                success: function() {
+                    alert('商品已成功刪除');
+                    loadProducts();
+                },
+                error: function(xhr) {
+                    alert('刪除失敗：' + xhr.responseText);
+                }
+            });
+        };
+
+        // 編輯商品（跳轉到編輯頁面）
+        window.editProduct = function(productId) {
+            window.location.href = `EditProduct.html?id=${productId}`;
+            // 這裡可以根據需求實現跳轉到編輯頁面或打開編輯模態框
+            // alert('請實現編輯功能，商品ID：' + productId);
+        };
+    });
+</script>
+</body>
+</html>
