@@ -119,5 +119,12 @@ public class ProductController {
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build(); // 返回204，商品已不存在
     }
 
+//    // 購物車功能
+//    @PostMapping("/products/{productId}/addToCart")
+//    public ResponseEntity<String> addProductToCart(@PathVariable Integer productId, @RequestParam Integer userId) {
+//        productService.addToCart(userId, productId);
+//        return ResponseEntity.status(HttpStatus.OK).body("Product added to cart successfully.");
+//    }
+
 
 }

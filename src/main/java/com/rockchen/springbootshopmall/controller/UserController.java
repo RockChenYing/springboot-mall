@@ -8,9 +8,7 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 public class UserController {
@@ -32,15 +30,16 @@ public class UserController {
         User user = userService.login(userLoginRequest);
         return ResponseEntity.status(HttpStatus.OK).body(user);
     }
-
-
-
-
-
-
-
-
-
+//    // 驗證會員來登入產品界面
+//    @GetMapping("/users/{userId}")
+//    public ResponseEntity<User> getUserById(@PathVariable Integer userId) {
+//        User user = userService.getUserById(userId);
+//        if (user != null) {
+//            return ResponseEntity.status(HttpStatus.OK).body(user);
+//        } else {
+//            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+//        }
+//    }
 
 
 }

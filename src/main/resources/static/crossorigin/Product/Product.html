@@ -6,6 +6,16 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <!--新增商品表單的樣式-->
     <style>
+
+        #user-id-display {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            font-size: 20px;
+            font-weight: bold;
+            color: #007bff;
+        }
+
         .form-container {
             background-color: #00AEAE; /* 背景顏色 */
             padding: 20px;
@@ -73,7 +83,18 @@
 </head>
 <body>
 
+
+
+<div style="text-align: right; margin-bottom: 20px;">
+    <button class="btn btn-primary" onclick="goToCart()">查看購物車</button>
+</div>
+
+
+<!-- 顯示用戶 ID -->
+<div id="user-id-display">UserID:</div>
+
 <div class="container">
+
 <!-- 新增商品表單 -->
 <div class="form-container">
     <h2>新增商品</h2>
@@ -92,15 +113,15 @@
             </select>
         </div>
         <div class="form-group">
-            <label for="imageUrl">照片:</label>
+            <label for="imageUrl">&nbsp照片:</label>
             <input type="text" class="form-control" id="imageUrl" required>
         </div>
         <div class="form-group">
-            <label for="price">價格:</label>
+            <label for="price">&nbsp價格:</label>
             <input type="number" class="form-control" id="price" required>
         </div>
         <div class="form-group">
-            <label for="stock">庫存:</label>
+            <label for="stock">&nbsp庫存:</label>
             <input type="number" class="form-control" id="stock" required>
         </div>
         <div class="form-group">
@@ -139,6 +160,20 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
 <script>
+
+    // 獲取 URL 中的 userId
+    const params = new URLSearchParams(window.location.search);
+    const userId = params.get('id'); // 提取 ?id=16 中的 16
+
+    // 確保 #user-id-display 存在並更新內容
+    const userIdDisplay = document.getElementById('user-id-display');
+    if (userId && userIdDisplay) {
+        userIdDisplay.innerText = `UserID: ${userId}`;
+    } else if (userIdDisplay) {
+        userIdDisplay.innerText = '未登入';
+    } else {
+        console.error("無法找到 #user-id-display 元素");
+    }
 
     $('#createProduct').click(function () {
         const productData = {
@@ -317,16 +352,19 @@
                             <p>庫存: ${product.stock}</p>
                             <p>描述: ${product.description || '無'}</p>
                             <div style="margin-top: 10px;">
-                                <button onclick="editProduct(${product.productId})"
-                                        class="btn btn-primary" style="margin-right: 10px;">
-                                    <i class="fas fa-edit"></i> 編輯
-                                </button>
-                                <button onclick="deleteProduct(${product.productId})"
-                                        class="btn btn-danger">
-                                    <i class="fas fa-trash"></i> 刪除
-                                </button>
-                            </div>
-                        </div>
+    <button onclick="editProduct(${product.productId})"
+            class="btn btn-primary" style="margin-right: 10px;">
+        <i class="fas fa-edit"></i> 編輯
+    </button>
+    <button class="btn btn-success" onclick="addToCart(${product.productId})">
+        加入購物車
+    </button>
+    <button onclick="deleteProduct(${product.productId})"
+            class="btn btn-danger">
+        <i class="fas fa-trash"></i> 刪除
+    </button>
+</div>
+
                     `;
                 $productList.append(productHtml);
             });
@@ -378,6 +416,46 @@
                 }
             });
         };
+
+        // 購物車功能
+        window.addToCart = function(productId) {
+            if (!userId) {
+                alert('請先登入');
+                return;
+            }
+            // 後端請求的結構
+            const requestBody = {
+              buyItemList:[
+                  {
+                      productId: productId,
+                      quantity: 1 // 預設數量
+                  }
+              ]
+            };
+
+            $.ajax({
+                url: `/users/${userId}/orders`,
+                method: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(requestBody),
+                success: function() {
+                    alert('已成功加入購物車');
+                },
+                error: function(xhr) {
+                    alert('加入購物車失敗');
+                }
+            });
+        }
+
+        window.goToCart = function() {
+            if (!userId) {
+                alert('請先登入');
+                return;
+            }
+            window.location.href = `/crossorigin/Order/Order.html?id=${userId}`;
+        }
+
+
 
         // 編輯商品（跳轉到編輯頁面）
         window.editProduct = function(productId) {

@@ -1,10 +1,149 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title>購物車</title>
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: #f5f5f5;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            background: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+        th, td {
+            padding: 10px;
+            text-align: left;
+        }
+        .btn {
+            padding: 10px 20px;
+            font-size: 14px;
+            font-weight: bold;
+            color: #fff;
+            background-color: #007bff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .btn:hover {
+            opacity: 0.9;
+        }
+    </style>
 </head>
 <body>
+<div class="container">
+    <h2>購物車</h2>
+    <table>
+        <thead>
+        <tr>
+            <th>商品名稱</th>
+            <th>數量</th>
+            <th>價格</th>
+            <th>操作</th>
+        </tr>
+        </thead>
+        <tbody id="cartTableBody">
+        </tbody>
+    </table>
+    <button class="btn" onclick="checkout()">結帳</button>
+</div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script>
+    $(document).ready(function (){
+        const userId = new URLSearchParams(window.location.search).get('id');
+        if(!userId){
+            alert('請先登入');
+            window.location.href = '/crossorigin/User/Login.html';
+            return;
+        }
+        // 載入 User購物車數據
+        loadOrders(userId);
+    })
+
+    // const params = new URLSearchParams(window.location.search);
+    // const userId = params.get('id');
+
+    function loadOrders(userId) {
+        $.ajax({
+            url: `/users/${userId}/orders`,
+            method: 'GET',
+            success: function(response) {
+                renderCart(response.content);
+            },
+            error: function() {
+                alert('無法加載購物車');
+            }
+        });
+    }
+
+    // 渲染購物車數據
+    function renderCart(orders) {
+        const cartTableBody = $('#cartTableBody');
+        cartTableBody.empty(); // 清空購物車表格
+
+        if (!orders || orders.length === 0) {
+            cartTableBody.append('<tr><td colspan="4">購物車是空的</td></tr>');
+            return;
+        }
+
+        orders.forEach(order => {
+            order.orderItems.forEach(item => {
+                const rowHtml = `
+                <tr>
+                    <td>${item.product.productName}</td>
+                    <td>${item.quantity}</td>
+                    <td>NT$ ${item.amount}</td>
+                    <td>
+                        <button class="btn btn-danger" onclick="removeFromCart(${item.orderItemId})">刪除</button>
+                    </td>
+                </tr>
+            `;
+                cartTableBody.append(rowHtml);
+            });
+        });
+    }
+
+    // 刪除購物車商品
+    function removeFromCart(orderItemId) {
+        if (!confirm('確定要刪除此商品嗎？')) return;
+
+        $.ajax({
+            url: `/order-items/${orderItemId}`,
+            method: 'DELETE',
+            success: function () {
+                alert('商品已成功刪除');
+                location.reload(); // 重新載入購物車頁面
+            },
+            error: function (xhr) {
+                console.error('刪除失敗:', xhr.responseText);
+                alert('刪除失敗');
+            }
+        });
+    }
+
+    function checkout() {
+        alert('結帳功能還在實作中');
+    }
+
+    // $(document).ready(function() {
+    //     loadOrders();
+    // });
+</script>
 </body>
 </html>
