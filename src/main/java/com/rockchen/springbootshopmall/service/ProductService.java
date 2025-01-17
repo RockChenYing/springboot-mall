@@ -21,5 +21,8 @@ public interface ProductService {
 
     void deleteProductById(Integer productId);
 
+    //New 新增至購物車
+    void addToCart(Integer userId, Integer productId);
+
 
 }

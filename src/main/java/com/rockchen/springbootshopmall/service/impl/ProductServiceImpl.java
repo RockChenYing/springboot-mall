@@ -92,4 +92,9 @@ public class ProductServiceImpl implements ProductService {
         productRepository.deleteById(productId);
     }
 
+    @Override
+    public void addToCart(Integer userId, Integer productId) {
+
+    }
+
 }
