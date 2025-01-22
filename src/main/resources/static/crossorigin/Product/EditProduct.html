@@ -45,6 +45,7 @@
     $(document).ready(function() {
         const urlParams = new URLSearchParams(window.location.search);
         const productId = urlParams.get('id');
+        const userId = urlParams.get('userId');
 
         // 加載商品資料
         $.ajax({
@@ -85,7 +86,8 @@
                 data: JSON.stringify(editProduct),
                 success: function(response) {
                     alert('商品更新成功！');
-                    window.location.href = 'product.html';
+                    // 跳轉到商品頁面，並保留使用者 ID
+                    window.location.href = `/crossorigin/Product/Product.html?id=${userId}`;
                 },
                 error: function(xhr) {
                     alert('更新失敗：' + xhr.responseText);

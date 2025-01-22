@@ -1,7 +1,6 @@
 package com.rockchen.springbootshopmall.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.rockchen.springbootshopmall.dao.UserDao;
 import com.rockchen.springbootshopmall.dto.UserLoginRequest;
 import com.rockchen.springbootshopmall.dto.UserRegisterRequestDto;
 import com.rockchen.springbootshopmall.model.User;
@@ -27,8 +26,6 @@ public class UserControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
-    @Autowired
-    private UserDao userDao;
 
     private ObjectMapper objectMapper = new ObjectMapper();
 

@@ -1,0 +1,46 @@
+version: "3.8"
+
+services:
+ 
+  # 資料庫設置
+  mysql:
+    container_name: mysql-container
+    image: mysql:8.0
+    environment: 
+       MYSQL_ROOT_PASSWORD: springboot
+       MYSQL_DATABASE: mall
+    ports:
+      - "3308:3306"
+    volumes:
+      - ./src/main/resources/mall_user.sql:/docker-entrypoint-initdb.d/mall_user.sql
+      - ./src/main/resources/mall_product.sql:/docker-entrypoint-initdb.d/mall_product.sql
+      - ./src/main/resources/mall_order.sql:/docker-entrypoint-initdb.d/mall_order.sql
+      - ./src/main/resources/mall_order_item.sql:/docker-entrypoint-initdb.d/mall_order_item.sql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-pspringboot"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # 專案
+  app:    
+    container_name: shopmall-container
+    build: .
+    ports:
+      - "8080:8080"
+    # volumes:
+    #   - ./logs:/app/logs # 將 logs 資料夾映射到容器
+    depends_on:
+       mysql:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql-container:3306/mall?serverTimezone=UTC&useSSL=false&allowPublicKeyRetrieval=true&useUnicode=true&characterEncoding=UTF-8
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: springboot
+      
+networks:
+  default:
+    driver: bridge
+    
+volumes:
+  mysql_data:
